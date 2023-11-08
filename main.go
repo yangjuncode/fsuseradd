@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 import "github.com/jessevdk/go-flags"
 
@@ -52,7 +53,7 @@ func main() {
 	}
 
 	if opts.Version {
-		fmt.Println("version: 1.0.0")
+		fmt.Println("version: 1.1.0")
 		return
 	}
 
@@ -78,6 +79,17 @@ func processingOneFile(start int) {
 	}
 
 	newXML := bytes.ReplaceAll(userTempalteXML, []byte("1001"), []byte(fmt.Sprintf("%d", start)))
+
+	//template xml is utf-8 \r\n windows
+	//linux is \n
+	if runtime.GOOS == "linux" {
+		newXML = bytes.ReplaceAll(newXML, []byte("\r\n"), []byte("\n"))
+	}
+	//macos is \r
+	if runtime.GOOS == "darwin" {
+		newXML = bytes.ReplaceAll(newXML, []byte("\r\n"), []byte("\r"))
+	}
+
 	_, err = f.Write(newXML)
 	if err != nil {
 		fmt.Println("write file err:", err, filePath)
